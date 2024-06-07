@@ -44,15 +44,19 @@ export default class GAME extends Phaser.Scene {
 
         this.contenedorCartas.setSize(ContainerInfo.width, ContainerInfo.height);
 
-        var animales = ["cocodrilo", "leon", "monito", "serpiente", "chonchito", "elefante"];
-        var cocodrilo = this.add.image(posXY.x,  posXY.y , 'cocodrilo').setOrigin(0, 0);
-        var leon = this.add.image(posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y, 'leon').setOrigin(0, 0);
-        var monito = this.add.image(posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y, 'monito').setOrigin(0, 0);
-        var serpiente = this.add.image(posXY.x, posXY.y + jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas , 'serpiente').setOrigin(0, 0);
-        var chonchito = this.add.image(posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y +  jsonCartas.tamañoCartas +jsonCartas.espaciadoFilas, 'chonchito').setOrigin(0, 0);
-        var elefante = this.add.image(posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y+ jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas, 'elefante').setOrigin(0, 0);
+    var animales = ["cocodrilo", "leon", "monito", "serpiente", "chonchito", "elefante"];
+    Phaser.Math.RND.shuffle(animales);
+    var posiciones = [
+        [posXY.x,  posXY.y],
+        [posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y],
+        [posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y],
+        [posXY.x, posXY.y + jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas],
+        [posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y +  jsonCartas.tamañoCartas +jsonCartas.espaciadoFilas],
+        [posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y+ jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas]
+    ]
 
-        this.contenedorCartas.add([cocodrilo, leon, monito, serpiente, chonchito, elefante]);
+        for(let i = 0; i < animales.length; i++){
+            this.contenedorCartas.add(this.add.image(posiciones[i][0], posiciones[i][1], animales[i]).setOrigin(0, 0));}
 
         this.contenedorCartas.iterate((carta) => {
             carta.texturaOriginal = carta.texture.key;
