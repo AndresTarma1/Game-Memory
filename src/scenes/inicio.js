@@ -8,11 +8,12 @@ export default class Inicio extends Phaser.Scene {
     }
     
     create(){
+        var {width, height} = this.sys.game.config;
         const keys = Phaser.Input.Keyboard.KeyCodes;
-
-        this.fondo = this.add.image(0, 0, "backgroundImage").setDisplayOrigin();
-        // Añade la imagen de fondo
         
+        // Añade la imagen de fondo
+        this.fondo = this.add.image(0, 0, "backgroundImage").setDisplayOrigin(0,0);
+        this.fondo.setDisplaySize(width, height);
         var configText = {
             color: "#000",
             fontSize: 24,

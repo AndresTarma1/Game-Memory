@@ -3,8 +3,7 @@ export default class GAME extends Phaser.Scene {
         super({key: 'GAME'});
     }
 
-    preload(){
-        this.load.path = '../../assets/';
+    preload(){this.load.path = '../../assets/';
         this.load.image("cocodrilo", "cocodrilo.png");
         this.load.image("leon", "leon.png");
         this.load.image("monito", "monito.png");
@@ -13,54 +12,39 @@ export default class GAME extends Phaser.Scene {
         this.load.image("elefante", "elefante.png");
         this.load.image("fondoGame", "fondoGame.jpg");
         this.load.image("cartaVolteada", "volteada.png");
+        const container = document.getElementById('contenedor');
+        this.containerWidth = container.clientWidth;
+        this.containerHeight = container.clientHeight;
+        console.log(this.containerWidth);
+        console.log(this.containerHeight);
     }
 
     create(){
-
-        this.fondo = this.add.image(0, 0, "fondoGame").setDisplayOrigin();
-        this.fondo.setDisplaySize(800, 600);
-
+        //Colocamos el ancho y el height del juego en una variable de widht y otra de height
         var {width, height} = this.sys.game.config;
-        const jsonCartas = {
-            espaciadoCartas : 60,
-            espaciadoFilas : 30,
-            tamañoCartas : 145,
-            columnas : 3,
-            filas : 2,
-            cartas : 3,
-        }
+
+        //Agregamos el fondo
+        this.fondo = this.add.image(0, 0, "fondoGame").setDisplayOrigin(0,0);
+        this.fondo.setDisplaySize(width, height);
+
+
+        const jsonCartas = {espaciadoCartas : 60,espaciadoFilas : 30,tamañoCartas : 145,columnas : 3,filas : 2,cartas : 3}
         this.contenedorCartas = this.add.container(width / 2, height / 2 - 1000 );
         
         
-        const ContainerInfo = {
-            width : jsonCartas.cartas * jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas * (jsonCartas.columnas - 1),
-            height : jsonCartas.filas * jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas,
-        }
+        const ContainerInfo = {width : jsonCartas.cartas * jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas * (jsonCartas.columnas - 1),height : jsonCartas.filas * jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas,}
 
-        const posXY = {
-            x: - (ContainerInfo.width / 2),
-            y: - (ContainerInfo.height / 2)
-        }
+        const posXY = {x: - (ContainerInfo.width / 2),y: - (ContainerInfo.height / 2)}
 
         this.contenedorCartas.setSize(ContainerInfo.width, ContainerInfo.height);
 
-    var animales = ["cocodrilo", "leon", "monito", "serpiente", "chonchito", "elefante"];
-    Phaser.Math.RND.shuffle(animales);
-    var posiciones = [
-        [posXY.x,  posXY.y],
-        [posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y],
-        [posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y],
-        [posXY.x, posXY.y + jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas],
-        [posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y +  jsonCartas.tamañoCartas +jsonCartas.espaciadoFilas],
-        [posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y+ jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas]
-    ]
+        var animales = ["cocodrilo", "leon", "monito", "serpiente", "chonchito", "elefante"];
+        Phaser.Math.RND.shuffle(animales);
+        var posiciones = [[posXY.x,  posXY.y],[posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y],[posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y],[posXY.x, posXY.y + jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas],[posXY.x + (jsonCartas.tamañoCartas + jsonCartas.espaciadoCartas), posXY.y +  jsonCartas.tamañoCartas +jsonCartas.espaciadoFilas],[posXY.x + (jsonCartas.tamañoCartas * 2 + jsonCartas.espaciadoCartas * 2), posXY.y+ jsonCartas.tamañoCartas + jsonCartas.espaciadoFilas]]
 
-        for(let i = 0; i < animales.length; i++){
-            this.contenedorCartas.add(this.add.image(posiciones[i][0], posiciones[i][1], animales[i]).setOrigin(0, 0));}
+        for(let i = 0; i < animales.length; i++){this.contenedorCartas.add(this.add.image(posiciones[i][0], posiciones[i][1], animales[i]).setOrigin(0, 0));}
 
-        this.contenedorCartas.iterate((carta) => {
-            carta.texturaOriginal = carta.texture.key;
-        });
+        this.contenedorCartas.iterate((carta) => {carta.texturaOriginal = carta.texture.key;});
 
 
         this.carta = this.contenedorCartas.getRandom();
@@ -71,6 +55,7 @@ export default class GAME extends Phaser.Scene {
     verificarRespuesta(carta_){
         if(carta_.texture.key == this.newCarta.texture.key){
             console.log("Has ganado");
+            this.ganaste()
         }else{
             this.ocultarCarta(carta_);
         }
@@ -82,12 +67,7 @@ export default class GAME extends Phaser.Scene {
         this.newCarta = this.add.image(this.sys.game.config.width, 1000, this.carta.texturaOriginal);
         this.newCarta.setOrigin(1, 0);
 
-        this.tweens.add({
-            targets: this.newCarta,
-            ease: "Bounce",
-            duration: 1000,
-            y: 0,
-        });
+        this.tweens.add({targets: this.newCarta,ease: "Bounce",duration: 1000,y: 0});
 
         // Habilitamos el click en las cartas
         this.contenedorCartas.iterate((carta) => {
@@ -127,6 +107,17 @@ export default class GAME extends Phaser.Scene {
         this.time.addEvent({ delay: 1000, loop: true, callback: actualizarContador });
     }
 
+    ganaste(){
+        var victoryText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '¡Ganaste!', {
+            fontFamily: 'Arial',
+            fontSize: 16, // Tamaño inicial pequeño
+            color: '#ffffff',
+            alpha: 0.2, // Opacidad inicial baja
+          });
+          
+          victoryText.setOrigin(0.5, 0.5); // Centrar el texto
+    }
+
     animarContenedor() {
         // Crear una animación para mover el contenedor hacia abajo
         this.tweens.add({
@@ -138,6 +129,11 @@ export default class GAME extends Phaser.Scene {
                 this.ocultarCartas();
             }
         });
+    }
+
+
+    agregarContenedorIntentar(){
+
     }
 
     ocultarCarta(carta_){
@@ -187,7 +183,4 @@ export default class GAME extends Phaser.Scene {
     update(){
 
     }
-
-
-
 }

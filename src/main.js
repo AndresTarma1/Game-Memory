@@ -1,14 +1,19 @@
 import GAME from "./scenes/game.js";
 import Inicio from "./scenes/inicio.js";
 
+var ancho = document.getElementById("contenedor").offsetWidth;
+var largo = document.getElementById("contenedor").offsetHeight;
+
 const config = {
-    width: 800,
-    height: 600,
-    parent: "contenedor",
     type: Phaser.AUTO,
-    pixelArt: true,
+    width: document.getElementById("contenedor").offsetWidth,
+    height: document.getElementById("contenedor").offsetHeight,
+    parent: "contenedor",
     scene: [Inicio, GAME],
-    debug: true,
+    scale: {
+        mode: Phaser.Scale.ENVELOP,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+    }
 }
 
-const game = new Phaser.Game(config);
+var game = new Phaser.Game(config);
