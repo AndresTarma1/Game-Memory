@@ -6,12 +6,12 @@ var largo = document.getElementById("contenedor").offsetHeight;
 
 const config = {
     type: Phaser.AUTO,
-    width: document.getElementById("contenedor").offsetWidth,
-    height: document.getElementById("contenedor").offsetHeight,
+    width: ancho,
+    height: largo,
     parent: "contenedor",
     scene: [Inicio, GAME],
     scale: {
-        mode: Phaser.Scale.ENVELOP,
+        mode: Phaser.Scale.FIT_TO_CONTAINER,
         autoCenter: Phaser.Scale.CENTER_BOTH,
     }
 }

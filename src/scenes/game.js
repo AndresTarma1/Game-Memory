@@ -12,11 +12,13 @@ export default class GAME extends Phaser.Scene {
         this.load.image("elefante", "elefante.png");
         this.load.image("fondoGame", "fondoGame.jpg");
         this.load.image("cartaVolteada", "volteada.png");
-        const container = document.getElementById('contenedor');
-        this.containerWidth = container.clientWidth;
-        this.containerHeight = container.clientHeight;
-        console.log(this.containerWidth);
-        console.log(this.containerHeight);
+        const {width, height} = this.sys.game.config;
+        console.log(this.sys.game.config.width)
+        console.log(this.sys.game.config.height)
+        console.log(this.sys.game.config.zoom)
+        console.log(this.sys.game.config.type)
+        this.containerWidth = width;
+        this.containerHeight = height;
     }
 
     create(){
