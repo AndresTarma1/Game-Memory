@@ -1,4 +1,4 @@
-import GAME from "./scenes/game.js";
+import {NIVEL1, NIVEL2, NIVEL3} from "./scenes/niveles.js";
 import Inicio from "./scenes/inicio.js";
 
 var ancho = document.getElementById("contenedor").offsetWidth;
@@ -9,7 +9,7 @@ const config = {
     width: ancho,
     height: largo,
     parent: "contenedor",
-    scene: [Inicio, GAME],
+    scene: [Inicio, NIVEL1, NIVEL2, NIVEL3],
     scale: {
         mode: Phaser.Scale.FIT_TO_CONTAINER,
         autoCenter: Phaser.Scale.CENTER_BOTH,
