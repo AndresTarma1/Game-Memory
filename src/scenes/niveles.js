@@ -7,6 +7,7 @@ export class NIVEL1 extends Phaser.Scene {
     }
 
     preload(){
+        this.level = 1;
 
         // Intentos
         this.intentos = 0;
@@ -41,6 +42,7 @@ export class NIVEL1 extends Phaser.Scene {
         this.fondo = this.add.image(0, 0, "fondoGame").setDisplayOrigin(0,0);
         this.fondo.setDisplaySize(width, height);
 
+        this.add.text(width / 2, 25, `NIVEL: ${this.level}`, {fontFamily: "Arial", color: "#000", fontStyle: "bold", fontSize: 30, align: "center"}).setOrigin(.5, .5);
         const jsonInfo = {
             time: tiempo,
             widthGame: width,
@@ -170,7 +172,7 @@ export class NIVEL1 extends Phaser.Scene {
         var contador = config.time;
 
         // Agregamos el contador en la parte inferior izquierda
-        var textoCartas = this.add.text(0, config.heightGame - 34, contador, {color: "#000", fontSize:34, fontStyle: "bold"});
+        var textoCartas = this.add.text(10, config.heightGame - 40, `Volteando cartas en ${contador}`, {color: "#000", fontSize:34, fontStyle: "bold"});
 
         // Funcion para que se volteen las cartas "cartavolteada"
         var CartasVolteadas = () => {
@@ -179,7 +181,7 @@ export class NIVEL1 extends Phaser.Scene {
             contador--;
 
             // Asignamos el contador nuevo al cambiar el segundo
-            textoCartas.setText(contador);
+            textoCartas.setText(`Volteando cartas en ${contador}`);
         
                 // Verifica si el contador ha terminado
                 if (contador === 0) {
@@ -247,7 +249,7 @@ export class NIVEL1 extends Phaser.Scene {
             fontFamily: 'Arial',
             fontSize: 32, // Tamaño inicial pequeño
             color: '#000',
-          });
+        });
           
         victoryText.setOrigin(0.5, 0.5); // Centrar el texto
         this.tweens.add({
@@ -271,6 +273,7 @@ export class NIVEL1 extends Phaser.Scene {
                     this.nivel++;
                     this.scene.restart({nivel: this.nivel++});
                 }else{
+                    victoryText.setText("");
                     this.nextLevel(config);
                 }
             },
@@ -280,7 +283,7 @@ export class NIVEL1 extends Phaser.Scene {
     }
 
     nextLevel(config){
-        var texto = this.add.text(config.widthGame / 2, config.heightGame / 2, "Has click para avanzar al siguiente nivel", {color: "#000", fontSize: 32, align: "center", fontStyle: "bold"});
+        var texto = this.add.text(config.widthGame / 2, config.heightGame / 2, "Has click para avanzar \nal siguiente nivel", {color: "#000", fontSize: 32, align: "center", fontStyle: "bold"});
         texto.setInteractive();
         texto.setOrigin(.5, .5)
         texto.on("pointerdown", () => {
@@ -585,7 +588,7 @@ export class NIVEL2 extends Phaser.Scene {
     }
 
     nextLevel(config){
-        var texto = this.add.text(config.widthGame / 2, config.heightGame / 2, "Has click para avanzar al siguiente nivel", {color: "#000", fontSize: 32, align: "center", fontStyle: "bold"});
+        var texto = this.add.text(config.widthGame / 2, config.heightGame / 2, "Has click para avanzar\n al siguiente nivel", {color: "#000", fontSize: 32, align: "center", fontStyle: "bold"});
         texto.setInteractive();
         texto.setOrigin(.5, .5);
         texto.on("pointerdown", () => {
