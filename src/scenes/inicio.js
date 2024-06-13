@@ -4,7 +4,7 @@ export default class Inicio extends Phaser.Scene {
     }
 
     preload(){
-        this.load.image("backgroundImage", "../../assets/fondoThree.jpg");
+        this.load.image("backgroundImage", "../../assets/Fondo/Iniciobackground.png");
         this.load.image("logotipo", "../../assets/Logo/logoType.png");
         this.load.image("start", "../../assets/botonesUI/start.png");
         this.load.image("exit", "../../assets/botonesUI/exit.png");
@@ -44,6 +44,7 @@ export default class Inicio extends Phaser.Scene {
 
         // Eventos para encoger y crecer 'marco'
         start.on("pointerdown", () => { this.scene.start("NIVEL1", {nivel: 1})});
+        exit.on("pointerdown", () => {window.history.back()})
 
         contenedorOpciones.add([start, exit]);
     }

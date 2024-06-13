@@ -12,6 +12,14 @@ export class NIVEL1 extends Phaser.Scene {
         // Intentos
         this.intentos = 0;
 
+        // Musica de fondo
+        this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
+        this.load.audio("wrongSound", "../../assets/sounds/wrong_sound.mp3");
+
+        // Cargamos la fuente con bitmap
+        this.load.bitmapFont('gothic', 'assets/font/gothic.png', 'assets/font/gothic.xml');
+        this.load.bitmapFont('atari', 'assets/font/atari-smooth.png', 'assets/font/atari-smooth.xml');
+
         // Cargamos todo lo necesario para el juego
         this.load.path = '../../assets/';
         this.load.image("cocodrilo", "cocodrilo.png");
@@ -20,15 +28,20 @@ export class NIVEL1 extends Phaser.Scene {
         this.load.image("serpiente", "serpiente.png");
         this.load.image("chonchito", "chonchito.png");
         this.load.image("elefante", "elefante.png");
-        this.load.image("fondoGame", "../../assets/fondoThree.jpg");
+        this.load.image("fondoGame", "../../assets/Fondo/background.png");
         this.load.image("cartaVolteada", "volteada.png");
     }
 
     
     create(){
         if(this.nivel === 1){
+            this.audio_fondo = this.sound.add("musicFondo");
+            this.incorrecto = this.sound.add("wrongSound");
+            this.audio_fondo.play();
+            this.audio_fondo.loop = true;
             this.configuracion(8);
         }else if(this.nivel === 2){
+            this.incorrecto = this.sound.add("wrongSound");
             this.configuracion(5);
         }     
     }
@@ -42,7 +55,7 @@ export class NIVEL1 extends Phaser.Scene {
         this.fondo = this.add.image(0, 0, "fondoGame").setDisplayOrigin(0,0);
         this.fondo.setDisplaySize(width, height);
 
-        this.add.text(width / 2, 25, `NIVEL: ${this.level}`, {fontFamily: "Arial", color: "#000", fontStyle: "bold", fontSize: 30, align: "center"}).setOrigin(.5, .5);
+        this.add.bitmapText(width / 2, 25, "atari", `NIVEL: ${this.level}`, 24).setOrigin(.5, .5).setTint(0x00000088);
         const jsonInfo = {
             time: tiempo,
             widthGame: width,
@@ -63,12 +76,12 @@ export class NIVEL1 extends Phaser.Scene {
         var contador = 3;
 
         // Centramos el texto al centro
-        var textoContador = this.add.text(config.widthGame / 2, config.heightGame / 2, `Empezando en !${contador}!`  , { fontSize: 60, color: '#000', fontStyle: "Bold", align: 'center'}).setOrigin(0.5);
+        var textoContador = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2, "atari", `Empezando en ${contador}`, "34").setOrigin(0.5).setTint(0x000).setCenterAlign().setOrigin(0.5);
     
         // Crear una función para actualizar el texto del contador
         var actualizarContador = () => {
             contador--;
-            textoContador.setText(`Empezando en !${contador}!`);
+            textoContador.setText(`Empezando en ${contador}`);
         
             if (contador === 0) {
               this.tweens.add({
@@ -172,7 +185,7 @@ export class NIVEL1 extends Phaser.Scene {
         var contador = config.time;
 
         // Agregamos el contador en la parte inferior izquierda
-        var textoCartas = this.add.text(10, config.heightGame - 40, `Volteando cartas en ${contador}`, {color: "#000", fontSize:34, fontStyle: "bold"});
+        var textoCartas = this.add.bitmapText(10, config.heightGame - 40, "atari", `Volteando cartas en ${contador}`, 24).setTint(0x000);
 
         // Funcion para que se volteen las cartas "cartavolteada"
         var CartasVolteadas = () => {
@@ -208,14 +221,15 @@ export class NIVEL1 extends Phaser.Scene {
 
 
     mostrarCartaRandom(config){
-        var newCarta = this.add.image(this.sys.game.config.width, 1000, config.cartaRandom.texturaOriginal);
+        var newCarta = this.add.image(config.widthGame, config.heightGame + 1000, config.cartaRandom.texturaOriginal);
         newCarta.setOrigin(1, 0);
         newCarta.setDisplaySize(config.cAncho, config.cAlto);
 
         this.tweens.add({targets: newCarta,
             ease: "Power0",
             duration: 1000,
-            y: 0,
+            y: 10,
+            x: config.widthGame -10,
             onComplete: () => {
                 // Habilitamos el click en las cartas
                 config.contenedor.iterate((carta) => {
@@ -234,34 +248,78 @@ export class NIVEL1 extends Phaser.Scene {
     }
 
     verificarRespuesta(carta, config){
+        carta.disableInteractive();
         // Verificamos si la carta presionada es correcta
         if(carta.texture.key == config.cartaRandom.texture.key){
             config.contenedor.iterate((carta) => {carta.disableInteractive()});
-            this.ganaste(config)
+            this.Cartacorrecta(config);
+            this.ganaste(carta, config);
         }else{
+            this.audio_fondo.volume = 0.3;
+            this.incorrecto.play()
+            this.Cartaincorrecta(config);
             this.ocultarCarta(carta, config);
             this.intentos++;
         }
     }
-
-    ganaste(config){
-        var victoryText = this.add.text(this.sys.game.config.width / 2, this.sys.game.config.height - 32, '¡Ganaste!'+ 'Solo te ha tomado ' + this.intentos + ' intentos', {
-            fontFamily: 'Arial',
-            fontSize: 32, // Tamaño inicial pequeño
-            color: '#000',
+    Cartaincorrecta(config){
+        const incorrecto = this.add.bitmapText(config.widthGame / 2, -30 + (config.heightGame / 2 - config.contenedor.height / 2), "atari", "!INCORRECTO!", 24).setOrigin(.5, .5).setCenterAlign().setTint(0xf01313);
+        
+        // Crear la animación "tween"
+        const incorrectoTween = this.tweens.add({
+            targets: incorrecto, // Objeto "correcto"
+            props: {
+            alpha: 0 // Opacidad a 0 para ocultar el texto
+            },
+            ease: 'Linear', // Animación lineal
+            duration: 1500, // Duración de 1,5 segundos en milisegundos
+            delay: 0, // Retardo de 0 segundos (opcional)
+            onComplete: () => {
+            // Función opcional para realizar acciones después de la animación
+            // Por ejemplo, puedes iniciar un nuevo nivel o mostrar otra información
+            }
         });
-          
-        victoryText.setOrigin(0.5, 0.5); // Centrar el texto
+        incorrectoTween.play();
+    }
+
+    Cartacorrecta(config){
+        const correcto = this.add.bitmapText(config.widthGame / 2, -30 + (config.heightGame / 2 - config.contenedor.height / 2), "atari", "!CORRECTO!", 24).setOrigin(.5, .5).setCenterAlign().setTint(0x22DF0C);
+        
+        // Crear la animación "tween"
+        const correctoTween = this.tweens.add({
+            targets: correcto, // Objeto "correcto"
+            props: {
+            alpha: 0 // Opacidad a 0 para ocultar el texto
+            },
+            ease: 'Linear', // Animación lineal
+            duration: 1500, // Duración de 1,5 segundos en milisegundos
+            delay: 0, // Retardo de 0 segundos (opcional)
+            onComplete: () => {
+            // Función opcional para realizar acciones después de la animación
+            // Por ejemplo, puedes iniciar un nuevo nivel o mostrar otra información
+            }
+        });
+        correctoTween.play();
+    }
+
+    ganaste(carta, config){
+        config.contenedor.iterate((carta) => {carta.setTexture("cartaVolteada"); carta.setDisplaySize(config.cAncho, config.cAlto)});
+        carta.setTexture(carta.texturaOriginal);
+        carta.setDisplaySize(config.cAncho, config.cAlto);
+
         this.tweens.add({
             targets: config.contenedor,
             duration: 1500,
-            y: 1000,
-            ease: "Power0"});
+            y: config.heightGame + 100,
+            ease: "back.in"
+        });
+        
         this.tweens.add({
             targets: config.carta_Random,
-            duration: 2000,
-            y: 1000,
-            ease: "Power0",
+            duration: 1500,
+            x: config.widthGame + config.cAncho,
+            ease: "linear",
+            onComplete: ()=>{console.log(config.carta_Random.x)}
         });
 
         // Iniciar un nuevo contador después de ganar
@@ -273,7 +331,6 @@ export class NIVEL1 extends Phaser.Scene {
                     this.nivel++;
                     this.scene.restart({nivel: this.nivel++});
                 }else{
-                    victoryText.setText("");
                     this.nextLevel(config);
                 }
             },
@@ -283,24 +340,27 @@ export class NIVEL1 extends Phaser.Scene {
     }
 
     nextLevel(config){
-        var texto = this.add.text(config.widthGame / 2, config.heightGame / 2, "Has click para avanzar \nal siguiente nivel", {color: "#000", fontSize: 32, align: "center", fontStyle: "bold"});
-        texto.setInteractive();
-        texto.setOrigin(.5, .5)
-        texto.on("pointerdown", () => {
+        var texto = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2,"atari" , "Has click para avanzar \nal siguiente nivel", 34).setOrigin(.5, .5).setCenterAlign().setTint(0x1659F1);
+
+        this.fondo.setInteractive();
+        this.fondo.on("pointerdown", () => {
             this.scene.start("NIVEL2");}
         );
         
     }
 
     ocultarCarta(carta, config){
+        
         this.time.addEvent({
-            delay: 3000, // 3 segundos en milisegundos
+            delay: 2000, // 3 segundos en milisegundos
             callback: () => {
               // Acción que se ejecutará después de 3 segundos
               carta.setTexture("cartaVolteada").setDisplaySize(config.cAncho, config.cAlto);
+              carta.setInteractive();
+              this.audio_fondo.volume = 1;
             },
             callbackScope: this, // Opcional, para establecer el contexto de la función de retorno
-          });
+        });
     }
 
     update(){}
@@ -513,7 +573,7 @@ export class NIVEL2 extends Phaser.Scene {
 
 
     mostrarCartaRandom(config){
-        var newCarta = this.add.image(this.sys.game.config.width, 1000, config.cartaRandom.texturaOriginal);
+        var newCarta = this.add.image(this.sys.game.config.width, config.heightGame + 1000, config.cartaRandom.texturaOriginal);
         newCarta.setOrigin(1, 0);
         newCarta.setDisplaySize(config.cAncho, config.cAlto);
 
@@ -545,6 +605,7 @@ export class NIVEL2 extends Phaser.Scene {
             config.contenedor.iterate((carta) => {carta.disableInteractive()});
             this.ganaste(config)
         }else{
+            
             this.ocultarCarta(carta, config);
             this.intentos++;
         }
@@ -606,6 +667,7 @@ export class NIVEL2 extends Phaser.Scene {
             },
             callbackScope: this, // Opcional, para establecer el contexto de la función de retorno
           });
+        carta.setInteractive();
     }
 
     update(){}
@@ -818,7 +880,7 @@ export class NIVEL3 extends Phaser.Scene {
 
 
     mostrarCartaRandom(config){
-        var newCarta = this.add.image(this.sys.game.config.width, 1000, config.cartaRandom.texturaOriginal);
+        var newCarta = this.add.image(this.sys.game.config.width, config.heightGame + 1000, config.cartaRandom.texturaOriginal);
         newCarta.setOrigin(1, 0);
         newCarta.setDisplaySize(config.cAncho, config.cAlto);
 
@@ -864,12 +926,12 @@ export class NIVEL3 extends Phaser.Scene {
         this.tweens.add({
             targets: config.contenedor,
             duration: 1500,
-            y: 1000,
+            x: config.widthGame + 100,
             ease: "Power0"});
         this.tweens.add({
             targets: config.carta_Random,
             duration: 2000,
-            y: 1000,
+            x: config.widthGame + 100,
             ease: "Power0",
         });
 
