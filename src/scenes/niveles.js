@@ -7,6 +7,8 @@ export class NIVEL1 extends Phaser.Scene {
     }
 
     preload(){
+        this.win = false;
+
         this.level = 1;
 
         // Intentos
@@ -15,6 +17,7 @@ export class NIVEL1 extends Phaser.Scene {
         // Musica de fondo
         this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
         this.load.audio("wrongSound", "../../assets/sounds/wrong_sound.mp3");
+        this.load.audio("correctSound", "../../assets/sounds/correct_sound.mp3");
 
         // Cargamos la fuente con bitmap
         this.load.bitmapFont('gothic', 'assets/font/gothic.png', 'assets/font/gothic.xml');
@@ -37,11 +40,13 @@ export class NIVEL1 extends Phaser.Scene {
         if(this.nivel === 1){
             this.audio_fondo = this.sound.add("musicFondo");
             this.incorrecto = this.sound.add("wrongSound");
+            this.correcto = this.sound.add("correctSound");
             this.audio_fondo.play();
             this.audio_fondo.loop = true;
             this.configuracion(8);
         }else if(this.nivel === 2){
             this.incorrecto = this.sound.add("wrongSound");
+            this.correcto = this.sound.add("correctSound");
             this.configuracion(5);
         }     
     }
@@ -55,7 +60,7 @@ export class NIVEL1 extends Phaser.Scene {
         this.fondo = this.add.image(0, 0, "fondoGame").setDisplayOrigin(0,0);
         this.fondo.setDisplaySize(width, height);
 
-        this.add.bitmapText(width / 2, 25, "atari", `NIVEL: ${this.level}`, 24).setOrigin(.5, .5).setTint(0x00000088);
+        this.add.bitmapText(width / 2, 25, "atari", `NIVEL: ${this.level}`, 24).setOrigin(.5, .5).setTint(0x000);
         const jsonInfo = {
             time: tiempo,
             widthGame: width,
@@ -226,7 +231,7 @@ export class NIVEL1 extends Phaser.Scene {
         newCarta.setDisplaySize(config.cAncho, config.cAlto);
 
         this.tweens.add({targets: newCarta,
-            ease: "Power0",
+            ease: "linear",
             duration: 1000,
             y: 10,
             x: config.widthGame -10,
@@ -252,11 +257,13 @@ export class NIVEL1 extends Phaser.Scene {
         // Verificamos si la carta presionada es correcta
         if(carta.texture.key == config.cartaRandom.texture.key){
             config.contenedor.iterate((carta) => {carta.disableInteractive()});
+            this.audio_fondo.volume = 0.3;
+            this.correcto.play();
             this.Cartacorrecta(config);
             this.ganaste(carta, config);
         }else{
             this.audio_fondo.volume = 0.3;
-            this.incorrecto.play()
+            this.incorrecto.play();
             this.Cartaincorrecta(config);
             this.ocultarCarta(carta, config);
             this.intentos++;
@@ -274,10 +281,6 @@ export class NIVEL1 extends Phaser.Scene {
             ease: 'Linear', // Animación lineal
             duration: 1500, // Duración de 1,5 segundos en milisegundos
             delay: 0, // Retardo de 0 segundos (opcional)
-            onComplete: () => {
-            // Función opcional para realizar acciones después de la animación
-            // Por ejemplo, puedes iniciar un nuevo nivel o mostrar otra información
-            }
         });
         incorrectoTween.play();
     }
@@ -294,23 +297,22 @@ export class NIVEL1 extends Phaser.Scene {
             ease: 'Linear', // Animación lineal
             duration: 1500, // Duración de 1,5 segundos en milisegundos
             delay: 0, // Retardo de 0 segundos (opcional)
-            onComplete: () => {
-            // Función opcional para realizar acciones después de la animación
-            // Por ejemplo, puedes iniciar un nuevo nivel o mostrar otra información
-            }
+            onComplete: () =>{this.audio_fondo.volume = 1;}
         });
         correctoTween.play();
     }
 
     ganaste(carta, config){
-        config.contenedor.iterate((carta) => {carta.setTexture("cartaVolteada"); carta.setDisplaySize(config.cAncho, config.cAlto)});
+        this.win = true;
+
+        config.contenedor.iterate((carta) => {carta.setTexture("cartaVolteada"); carta.setDisplaySize(config.cAncho, config.cAlto); carta.disableInteractive()});
         carta.setTexture(carta.texturaOriginal);
         carta.setDisplaySize(config.cAncho, config.cAlto);
 
         this.tweens.add({
             targets: config.contenedor,
             duration: 1500,
-            y: config.heightGame + 100,
+            y: config.heightGame+ config.contenedor.height / 2 + 100,
             ease: "back.in"
         });
         
@@ -346,23 +348,23 @@ export class NIVEL1 extends Phaser.Scene {
         this.fondo.on("pointerdown", () => {
             this.scene.start("NIVEL2");}
         );
-        
     }
 
     ocultarCarta(carta, config){
-        
         this.time.addEvent({
             delay: 2000, // 3 segundos en milisegundos
             callback: () => {
               // Acción que se ejecutará después de 3 segundos
               carta.setTexture("cartaVolteada").setDisplaySize(config.cAncho, config.cAlto);
-              carta.setInteractive();
               this.audio_fondo.volume = 1;
+              this.cartaInteractive(carta);
             },
             callbackScope: this, // Opcional, para establecer el contexto de la función de retorno
         });
     }
-
+    cartaInteractive(carta){
+        if(this.win){ carta.disableInteractive()}else{carta.setInteractive()};
+    }
     update(){}
 }
 export class NIVEL2 extends Phaser.Scene {
@@ -374,9 +376,21 @@ export class NIVEL2 extends Phaser.Scene {
     }
 
     preload(){
+        this.win = false;
+
+        this.level = 2;
 
         // Intentos
         this.intentos = 0;
+
+        // Musica de fondo
+        this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
+        this.load.audio("wrongSound", "../../assets/sounds/wrong_sound.mp3");
+        this.load.audio("correctSound", "../../assets/sounds/correct_sound.mp3");
+
+        // Cargamos la fuente con bitmap
+        this.load.bitmapFont('gothic', 'assets/font/gothic.png', 'assets/font/gothic.xml');
+        this.load.bitmapFont('atari', 'assets/font/atari-smooth.png', 'assets/font/atari-smooth.xml');
 
         // Cargamos todo lo necesario para el juego
         this.load.path = '../../assets/';
@@ -393,8 +407,15 @@ export class NIVEL2 extends Phaser.Scene {
     
     create(){
         if(this.nivel === 1){
+            this.audio_fondo = this.sound.add("musicFondo");
+            this.incorrecto = this.sound.add("wrongSound");
+            this.correcto = this.sound.add("correctSound");
+            this.audio_fondo.play();
+            this.audio_fondo.loop = true;
             this.configuracion(8);
         }else if(this.nivel === 2){
+            this.incorrecto = this.sound.add("wrongSound");
+            this.correcto = this.sound.add("correctSound");
             this.configuracion(5);
         }     
     }
@@ -408,6 +429,7 @@ export class NIVEL2 extends Phaser.Scene {
         this.fondo = this.add.image(0, 0, "fondoGame").setDisplayOrigin(0,0);
         this.fondo.setDisplaySize(width, height);
 
+        this.add.bitmapText(width / 2, 25, "atari", `NIVEL: ${this.level}`, 24).setOrigin(.5, .5).setTint(0x000);
         const jsonInfo = {
             time: tiempo,
             widthGame: width,
@@ -428,12 +450,12 @@ export class NIVEL2 extends Phaser.Scene {
         var contador = 3;
 
         // Centramos el texto al centro
-        var textoContador = this.add.text(config.widthGame / 2, config.heightGame / 2, `Empezando en !${contador}!`  , { fontSize: 60, color: '#000', fontStyle: "Bold", align: 'center'}).setOrigin(0.5);
+        var textoContador = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2, "atari", `Empezando en ${contador}`, "34").setOrigin(0.5).setTint(0x000).setCenterAlign().setOrigin(0.5);
     
         // Crear una función para actualizar el texto del contador
         var actualizarContador = () => {
             contador--;
-            textoContador.setText(`Empezando en !${contador}!`);
+            textoContador.setText(`Empezando en ${contador}`);
         
             if (contador === 0) {
               this.tweens.add({
@@ -537,7 +559,7 @@ export class NIVEL2 extends Phaser.Scene {
         var contador = config.time;
 
         // Agregamos el contador en la parte inferior izquierda
-        var textoCartas = this.add.text(0, config.heightGame - 34, contador, {color: "#000", fontSize:34, fontStyle: "bold"});
+        var textoCartas = this.add.bitmapText(10, config.heightGame - 40, "atari", `Volteando cartas en ${contador}`, 24).setTint(0x000);
 
         // Funcion para que se volteen las cartas "cartavolteada"
         var CartasVolteadas = () => {
@@ -546,7 +568,7 @@ export class NIVEL2 extends Phaser.Scene {
             contador--;
 
             // Asignamos el contador nuevo al cambiar el segundo
-            textoCartas.setText(contador);
+            textoCartas.setText(`Volteando cartas en ${contador}`);
         
                 // Verifica si el contador ha terminado
                 if (contador === 0) {
@@ -573,14 +595,15 @@ export class NIVEL2 extends Phaser.Scene {
 
 
     mostrarCartaRandom(config){
-        var newCarta = this.add.image(this.sys.game.config.width, config.heightGame + 1000, config.cartaRandom.texturaOriginal);
+        var newCarta = this.add.image(config.widthGame, config.heightGame + 1000, config.cartaRandom.texturaOriginal);
         newCarta.setOrigin(1, 0);
         newCarta.setDisplaySize(config.cAncho, config.cAlto);
 
         this.tweens.add({targets: newCarta,
-            ease: "Power0",
+            ease: "linear",
             duration: 1000,
-            y: 0,
+            y: 10,
+            x: config.widthGame - 10,
             onComplete: () => {
                 // Habilitamos el click en las cartas
                 config.contenedor.iterate((carta) => {
@@ -600,35 +623,73 @@ export class NIVEL2 extends Phaser.Scene {
     }
 
     verificarRespuesta(carta, config){
+        carta.disableInteractive();
         // Verificamos si la carta presionada es correcta
         if(carta.texture.key == config.cartaRandom.texture.key){
             config.contenedor.iterate((carta) => {carta.disableInteractive()});
-            this.ganaste(config)
+            this.audio_fondo.volume = 0.3;
+            this.correcto.play();
+            this.Cartacorrecta(config);
+            this.ganaste(carta, config)
         }else{
-            
+            this.audio_fondo.volume = 0.3;
+            this.incorrecto.play();
+            this.Cartaincorrecta(config);
             this.ocultarCarta(carta, config);
             this.intentos++;
         }
     }
+    Cartaincorrecta(config){
+        const incorrecto = this.add.bitmapText(config.widthGame / 2, -30 + (config.heightGame / 2 - config.contenedor.height / 2), "atari", "!INCORRECTO!", 24).setOrigin(.5, .5).setCenterAlign().setTint(0xf01313);
+        
+        // Crear la animación "tween"
+        const incorrectoTween = this.tweens.add({
+            targets: incorrecto, // Objeto "correcto"
+            props: {
+            alpha: 0 // Opacidad a 0 para ocultar el texto
+            },
+            ease: 'Linear', // Animación lineal
+            duration: 1500, // Duración de 1,5 segundos en milisegundos
+            delay: 0, // Retardo de 0 segundos (opcional)
+        });
+        incorrectoTween.play();
+    }
+    Cartacorrecta(config){
+        const correcto = this.add.bitmapText(config.widthGame / 2, -30 + (config.heightGame / 2 - config.contenedor.height / 2), "atari", "!CORRECTO!", 24).setOrigin(.5, .5).setCenterAlign().setTint(0x22DF0C);
+        
+        // Crear la animación "tween"
+        const correctoTween = this.tweens.add({
+            targets: correcto, // Objeto "correcto"
+            props: {
+            alpha: 0 // Opacidad a 0 para ocultar el texto
+            },
+            ease: 'Linear', // Animación lineal
+            duration: 1500, // Duración de 1,5 segundos en milisegundos
+            delay: 0, // Retardo de 0 segundos (opcional)
+            onComplete: () =>{this.audio_fondo.volume = 1;}
+        });
+        correctoTween.play();
+    }
 
-    ganaste(config){
-        var victoryText = this.add.text(this.sys.game.config.width / 2, this.sys.game.config.height - 32, '¡Ganaste!'+ 'Solo te ha tomado ' + this.intentos + ' intentos', {
-            fontFamily: 'Arial',
-            fontSize: 32, // Tamaño inicial pequeño
-            color: '#000',
-          });
-          
-        victoryText.setOrigin(0.5, 0.5); // Centrar el texto
+    ganaste(carta, config){
+        this.win = true;
+        config.contenedor.iterate((carta) => {carta.setTexture("cartaVolteada"); carta.setDisplaySize(config.cAncho, config.cAlto); carta.disableInteractive()});
+        carta.setTexture(carta.texturaOriginal);
+        carta.setDisplaySize(config.cAncho, config.cAlto);
+
         this.tweens.add({
             targets: config.contenedor,
             duration: 1500,
-            y: 1000,
-            ease: "Power0"});
+            y: config.heightGame + config.contenedor.height / 2 + 100,
+            ease: "back.in"
+        });
+        
         this.tweens.add({
             targets: config.carta_Random,
-            duration: 2000,
-            y: 1000,
-            ease: "Power0",
+            duration: 1500,
+            x: config.widthGame + config.cAncho,
+            ease: "linear",
+            onComplete: ()=>{console.log(config.carta_Random.x)}
         });
 
         // Iniciar un nuevo contador después de ganar
@@ -649,10 +710,10 @@ export class NIVEL2 extends Phaser.Scene {
     }
 
     nextLevel(config){
-        var texto = this.add.text(config.widthGame / 2, config.heightGame / 2, "Has click para avanzar\n al siguiente nivel", {color: "#000", fontSize: 32, align: "center", fontStyle: "bold"});
-        texto.setInteractive();
-        texto.setOrigin(.5, .5);
-        texto.on("pointerdown", () => {
+        var texto = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2,"atari" , "Has click para avanzar \nal siguiente nivel", 34).setOrigin(.5, .5).setCenterAlign().setTint(0x1659F1);
+
+        this.fondo.setInteractive();
+        this.fondo.on("pointerdown", () => {
             this.scene.start("NIVEL3");}
         );
         
@@ -660,18 +721,23 @@ export class NIVEL2 extends Phaser.Scene {
 
     ocultarCarta(carta, config){
         this.time.addEvent({
-            delay: 3000, // 3 segundos en milisegundos
+            delay: 2000, // 3 segundos en milisegundos
             callback: () => {
               // Acción que se ejecutará después de 3 segundos
               carta.setTexture("cartaVolteada").setDisplaySize(config.cAncho, config.cAlto);
+              this.audio_fondo.volume = 1;
+              this.cartaInteractive(carta);
             },
             callbackScope: this, // Opcional, para establecer el contexto de la función de retorno
-          });
-        carta.setInteractive();
+        });
+    }
+    cartaInteractive(carta){
+        if(this.win){ carta.disableInteractive()}else{carta.setInteractive()};
     }
 
     update(){}
 }
+
 export class NIVEL3 extends Phaser.Scene {
     init(nivel){
         this.nivel = nivel.nivel || 1;
@@ -681,9 +747,21 @@ export class NIVEL3 extends Phaser.Scene {
     }
 
     preload(){
+        this.win = false;
+
+        this.level = 1;
 
         // Intentos
         this.intentos = 0;
+
+        // Musica de fondo
+        this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
+        this.load.audio("wrongSound", "../../assets/sounds/wrong_sound.mp3");
+        this.load.audio("correctSound", "../../assets/sounds/correct_sound.mp3");
+
+        // Cargamos la fuente con bitmap
+        this.load.bitmapFont('gothic', 'assets/font/gothic.png', 'assets/font/gothic.xml');
+        this.load.bitmapFont('atari', 'assets/font/atari-smooth.png', 'assets/font/atari-smooth.xml');
 
         // Cargamos todo lo necesario para el juego
         this.load.path = '../../assets/';
@@ -700,8 +778,15 @@ export class NIVEL3 extends Phaser.Scene {
     
     create(){
         if(this.nivel === 1){
+            this.audio_fondo = this.sound.add("musicFondo");
+            this.incorrecto = this.sound.add("wrongSound");
+            this.correcto = this.sound.add("correctSound");
+            this.audio_fondo.play();
+            this.audio_fondo.loop = true;
             this.configuracion(8);
         }else if(this.nivel === 2){
+            this.incorrecto = this.sound.add("wrongSound");
+            this.correcto = this.sound.add("correctSound");
             this.configuracion(5);
         }     
     }
@@ -735,12 +820,12 @@ export class NIVEL3 extends Phaser.Scene {
         var contador = 3;
 
         // Centramos el texto al centro
-        var textoContador = this.add.text(config.widthGame / 2, config.heightGame / 2, `Empezando en !${contador}!`  , { fontSize: 60, color: '#000', fontStyle: "Bold", align: 'center'}).setOrigin(0.5);
+        var textoContador = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2, "atari", `Empezando en ${contador}`, "34").setOrigin(0.5).setTint(0x000).setCenterAlign().setOrigin(0.5);
     
         // Crear una función para actualizar el texto del contador
         var actualizarContador = () => {
             contador--;
-            textoContador.setText(`Empezando en !${contador}!`);
+            textoContador.setText(`Empezando en ${contador}`);
         
             if (contador === 0) {
               this.tweens.add({
@@ -844,7 +929,7 @@ export class NIVEL3 extends Phaser.Scene {
         var contador = config.time;
 
         // Agregamos el contador en la parte inferior izquierda
-        var textoCartas = this.add.text(0, config.heightGame - 34, contador, {color: "#000", fontSize:34, fontStyle: "bold"});
+        var textoCartas = this.add.bitmapText(10, config.heightGame - 40, "atari", `Volteando cartas en ${contador}`, 24).setTint(0x000);
 
         // Funcion para que se volteen las cartas "cartavolteada"
         var CartasVolteadas = () => {
@@ -853,7 +938,7 @@ export class NIVEL3 extends Phaser.Scene {
             contador--;
 
             // Asignamos el contador nuevo al cambiar el segundo
-            textoCartas.setText(contador);
+            textoCartas.setText(`Volteando cartas en ${contador}`);
         
                 // Verifica si el contador ha terminado
                 if (contador === 0) {
@@ -885,9 +970,10 @@ export class NIVEL3 extends Phaser.Scene {
         newCarta.setDisplaySize(config.cAncho, config.cAlto);
 
         this.tweens.add({targets: newCarta,
-            ease: "Power0",
+            ease: "linear",
             duration: 1000,
-            y: 0,
+            y: 10,
+            x: config.widthGame - 10,
             onComplete: () => {
                 // Habilitamos el click en las cartas
                 config.contenedor.iterate((carta) => {
@@ -905,34 +991,73 @@ export class NIVEL3 extends Phaser.Scene {
     }
 
     verificarRespuesta(carta, config){
+        carta.disableInteractive();
+
         // Verificamos si la carta presionada es correcta
         if(carta.texture.key == config.cartaRandom.texture.key){
             config.contenedor.iterate((carta) => {carta.disableInteractive()});
-            this.ganaste(config)
+            this.audio_fondo.volume = 0.3;
+            this.correcto.play();
+            this.Cartacorrecta(config);
+            this.ganaste(carta, config);
         }else{
+            this.audio_fondo.volume = 0.3;
+            this.incorrecto.play();
+            this.Cartaincorrecta(config);
             this.ocultarCarta(carta, config);
             this.intentos++;
         }
     }
+    Cartaincorrecta(config){
+        const incorrecto = this.add.bitmapText(config.widthGame / 2, -30 + (config.heightGame / 2 - config.contenedor.height / 2), "atari", "!INCORRECTO!", 24).setOrigin(.5, .5).setCenterAlign().setTint(0xf01313);
+        
+        // Crear la animación "tween"
+        const incorrectoTween = this.tweens.add({
+            targets: incorrecto, // Objeto "correcto"
+            props: {
+            alpha: 0 // Opacidad a 0 para ocultar el texto
+            },
+            ease: 'Linear', // Animación lineal
+            duration: 1500, // Duración de 1,5 segundos en milisegundos
+            delay: 0, // Retardo de 0 segundos (opcional)
+        });
+        incorrectoTween.play();
+    }
+    Cartacorrecta(config){
+        const correcto = this.add.bitmapText(config.widthGame / 2, -30 + (config.heightGame / 2 - config.contenedor.height / 2), "atari", "!CORRECTO!", 24).setOrigin(.5, .5).setCenterAlign().setTint(0x22DF0C);
+        
+        // Crear la animación "tween"
+        const correctoTween = this.tweens.add({
+            targets: correcto, // Objeto "correcto"
+            props: {
+            alpha: 0 // Opacidad a 0 para ocultar el texto
+            },
+            ease: 'Linear', // Animación lineal
+            duration: 1500, // Duración de 1,5 segundos en milisegundos
+            delay: 0, // Retardo de 0 segundos (opcional)
+            onComplete: () =>{this.audio_fondo.volume = 1;}
+        });
+        correctoTween.play();
+    }
 
-    ganaste(config){
-        var victoryText = this.add.text(this.sys.game.config.width / 2, this.sys.game.config.height - 32, '¡Ganaste!'+ 'Solo te ha tomado ' + this.intentos + ' intentos', {
-            fontFamily: 'Arial',
-            fontSize: 32, // Tamaño inicial pequeño
-            color: '#000',
-          });
+    ganaste(carta, config){
+        this.win = true;
+
+        config.contenedor.iterate((carta) => {carta.setTexture("cartaVolteada"); carta.setDisplaySize(config.cAncho, config.cAlto); carta.disableInteractive()});
+        carta.setTexture(carta.texturaOriginal);
+        carta.setDisplaySize(config.cAncho, config.cAlto);
           
-        victoryText.setOrigin(0.5, 0.5); // Centrar el texto
         this.tweens.add({
             targets: config.contenedor,
             duration: 1500,
-            x: config.widthGame + 100,
-            ease: "Power0"});
+            y: config.heightGame+ config.contenedor.height / 2 + 100,
+            ease: "back.in"});
         this.tweens.add({
             targets: config.carta_Random,
-            duration: 2000,
-            x: config.widthGame + 100,
+            duration: 1500,
+            x: config.widthGame + config.cAncho,
             ease: "Power0",
+            ease: "linear",
         });
 
         // Iniciar un nuevo contador después de ganar
@@ -953,22 +1078,29 @@ export class NIVEL3 extends Phaser.Scene {
     }
 
     nextLevel(config){
-        var texto = this.add.text(config.widthGame / 2, config.heightGame / 2, "Enhorabuena, felicidades, has ganado", {color: "#000", fontSize: 32, align: "center", fontStyle: "bold"});
-        texto.setInteractive();
-        texto.setOrigin(.5, .5)
-        texto.on("pointerdown", () => {});
+        var texto = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2,"atari" , "Enhorabuena \ntienes muy buena memoria", 34).setOrigin(.5, .5).setCenterAlign().setTint(0x1659F1);
+        
+        this.fondo.setInteractive();
+        this.fondo.on("pointerdown", () => {
+            this.scene.start("");}
+        );
         
     }
 
     ocultarCarta(carta, config){
         this.time.addEvent({
-            delay: 3000, // 3 segundos en milisegundos
+            delay: 2000, // 3 segundos en milisegundos
             callback: () => {
               // Acción que se ejecutará después de 3 segundos
               carta.setTexture("cartaVolteada").setDisplaySize(config.cAncho, config.cAlto);
+              this.audio_fondo.volume = 1;
+              this.cartaInteractive(carta);
             },
             callbackScope: this, // Opcional, para establecer el contexto de la función de retorno
           });
+    }
+    cartaInteractive(carta){
+        if(this.win){ carta.disableInteractive()}else{carta.setInteractive()};
     }
 
     update(){}
