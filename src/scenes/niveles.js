@@ -15,28 +15,29 @@ export class NIVEL1 extends Phaser.Scene {
         this.intentos = 0;
 
         // Musica de fondo
-        this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
-        this.load.audio("wrongSound", "../../assets/sounds/wrong_sound.mp3");
-        this.load.audio("correctSound", "../../assets/sounds/correct_sound.mp3");
+        this.load.audio("musicFondo", "/assets/sounds/music_fondo.mp3");
+        this.load.audio("wrongSound", "/assets/sounds/wrong_sound.mp3");
+        this.load.audio("correctSound", "/assets/sounds/correct_sound.mp3");
 
         // Cargamos la fuente con bitmap
         this.load.bitmapFont('gothic', 'assets/font/gothic.png', 'assets/font/gothic.xml');
         this.load.bitmapFont('atari', 'assets/font/atari-smooth.png', 'assets/font/atari-smooth.xml');
 
         // Cargamos todo lo necesario para el juego
-        this.load.path = '../../assets/';
+        this.load.path = '/assets/';
         this.load.image("cocodrilo", "cocodrilo.png");
         this.load.image("leon", "leon.png");
         this.load.image("monito", "monito.png");
         this.load.image("serpiente", "serpiente.png");
         this.load.image("chonchito", "chonchito.png");
         this.load.image("elefante", "elefante.png");
-        this.load.image("fondoGame", "../../assets/Fondo/background.png");
+        this.load.image("fondoGame", "/Fondo/background.png");
         this.load.image("cartaVolteada", "volteada.png");
     }
 
     
     create(){
+
         if(this.nivel === 1){
             this.audio_fondo = this.sound.add("musicFondo");
             this.incorrecto = this.sound.add("wrongSound");
@@ -344,6 +345,8 @@ export class NIVEL1 extends Phaser.Scene {
     nextLevel(config){
         var texto = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2,"atari" , "Has click para avanzar \nal siguiente nivel", 34).setOrigin(.5, .5).setCenterAlign().setTint(0x1659F1);
 
+        this.game.audio_fondo_global = this.audio_fondo;
+        
         this.fondo.setInteractive();
         this.fondo.on("pointerdown", () => {
             this.scene.start("NIVEL2");}
@@ -376,6 +379,7 @@ export class NIVEL2 extends Phaser.Scene {
     }
 
     preload(){
+
         this.win = false;
 
         this.level = 2;
@@ -384,34 +388,33 @@ export class NIVEL2 extends Phaser.Scene {
         this.intentos = 0;
 
         // Musica de fondo
-        this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
-        this.load.audio("wrongSound", "../../assets/sounds/wrong_sound.mp3");
-        this.load.audio("correctSound", "../../assets/sounds/correct_sound.mp3");
+        // this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
+        this.load.audio("wrongSound", "/assets/sounds/wrong_sound.mp3");
+        this.load.audio("correctSound", "/assets/sounds/correct_sound.mp3");
 
         // Cargamos la fuente con bitmap
         this.load.bitmapFont('gothic', 'assets/font/gothic.png', 'assets/font/gothic.xml');
         this.load.bitmapFont('atari', 'assets/font/atari-smooth.png', 'assets/font/atari-smooth.xml');
 
         // Cargamos todo lo necesario para el juego
-        this.load.path = '../../assets/';
+        this.load.path = '/assets/';
         this.load.image("cocodrilo", "cocodrilo.png");
         this.load.image("leon", "leon.png");
         this.load.image("monito", "monito.png");
         this.load.image("serpiente", "serpiente.png");
         this.load.image("chonchito", "chonchito.png");
         this.load.image("elefante", "elefante.png");
-        this.load.image("fondoGame", "../../assets/fondoThree.jpg");
+        this.load.image("fondoGame", "/fondoThree.jpg");
         this.load.image("cartaVolteada", "volteada.png");
     }
 
     
     create(){
         if(this.nivel === 1){
-            this.audio_fondo = this.sound.add("musicFondo");
+            this.audio_fondo = this.game.audio_fondo_global;
+            // this.audio_fondo = this.sound.add("musicFondo");
             this.incorrecto = this.sound.add("wrongSound");
             this.correcto = this.sound.add("correctSound");
-            this.audio_fondo.play();
-            this.audio_fondo.loop = true;
             this.configuracion(8);
         }else if(this.nivel === 2){
             this.incorrecto = this.sound.add("wrongSound");
@@ -481,7 +484,7 @@ export class NIVEL2 extends Phaser.Scene {
 
         // Agregamos un contenedor que contenga las cartas
         var contenedorCartas = this.add.container(config.widthGame / 2, config.heightGame / 2 - 1000 ); //Colocamos la posicion del contenedor al centro, ya que su origen es de (0.5, 0.5);
-        const ContainerInfo = {width: config.widthGame * 0.5, height : config.heightGame * 0.5} //Guardamos informacion del contenedor aqui
+        const ContainerInfo = {width: config.widthGame * 0.6, height : config.heightGame * 0.5} //Guardamos informacion del contenedor aqui
         contenedorCartas.setSize(ContainerInfo.width, ContainerInfo.height); //Le asignamos el tamaño al contenedor
 
         // GapX espaciado entre columnas
@@ -545,7 +548,7 @@ export class NIVEL2 extends Phaser.Scene {
         // Crear una animación para mover el contenedor hacia abajo
         this.tweens.add({
             targets: config.contenedor,
-            y: this.sys.game.config.height / 2, // Posición final del contenedor, osea el centro
+            y: (config.heightGame / 2) + config.heightGame / 6, // Posición final del contenedor, osea el centro
             duration: 1000, // Duración de la animación (1,5 segundos)
             ease: 'Power1', // Animación lineal
             onComplete: () => {
@@ -712,6 +715,8 @@ export class NIVEL2 extends Phaser.Scene {
     nextLevel(config){
         var texto = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2,"atari" , "Has click para avanzar \nal siguiente nivel", 34).setOrigin(.5, .5).setCenterAlign().setTint(0x1659F1);
 
+        this.game.audio_fondo_global = this.audio_fondo;
+
         this.fondo.setInteractive();
         this.fondo.on("pointerdown", () => {
             this.scene.start("NIVEL3");}
@@ -735,7 +740,7 @@ export class NIVEL2 extends Phaser.Scene {
         if(this.win){ carta.disableInteractive()}else{carta.setInteractive()};
     }
 
-    update(){}
+    update(){ }
 }
 
 export class NIVEL3 extends Phaser.Scene {
@@ -755,30 +760,30 @@ export class NIVEL3 extends Phaser.Scene {
         this.intentos = 0;
 
         // Musica de fondo
-        this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
-        this.load.audio("wrongSound", "../../assets/sounds/wrong_sound.mp3");
-        this.load.audio("correctSound", "../../assets/sounds/correct_sound.mp3");
+        // this.load.audio("musicFondo", "../../assets/sounds/music_fondo.mp3");
+        this.load.audio("wrongSound", "/assets/sounds/wrong_sound.mp3");
+        this.load.audio("correctSound", "/assets/sounds/correct_sound.mp3");
 
         // Cargamos la fuente con bitmap
         this.load.bitmapFont('gothic', 'assets/font/gothic.png', 'assets/font/gothic.xml');
         this.load.bitmapFont('atari', 'assets/font/atari-smooth.png', 'assets/font/atari-smooth.xml');
 
         // Cargamos todo lo necesario para el juego
-        this.load.path = '../../assets/';
+        this.load.path = '/assets/';
         this.load.image("cocodrilo", "cocodrilo.png");
         this.load.image("leon", "leon.png");
         this.load.image("monito", "monito.png");
         this.load.image("serpiente", "serpiente.png");
         this.load.image("chonchito", "chonchito.png");
         this.load.image("elefante", "elefante.png");
-        this.load.image("fondoGame", "../../assets/fondoThree.jpg");
+        this.load.image("fondoGame", "/Fondo/background.png");
         this.load.image("cartaVolteada", "volteada.png");
     }
 
     
     create(){
         if(this.nivel === 1){
-            this.audio_fondo = this.sound.add("musicFondo");
+            this.audio_fondo = this.game.audio_fondo_global;
             this.incorrecto = this.sound.add("wrongSound");
             this.correcto = this.sound.add("correctSound");
             this.audio_fondo.play();
@@ -1078,13 +1083,7 @@ export class NIVEL3 extends Phaser.Scene {
     }
 
     nextLevel(config){
-        var texto = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2,"atari" , "Enhorabuena \ntienes muy buena memoria", 34).setOrigin(.5, .5).setCenterAlign().setTint(0x1659F1);
-        
-        this.fondo.setInteractive();
-        this.fondo.on("pointerdown", () => {
-            this.scene.start("");}
-        );
-        
+        var texto = this.add.bitmapText(config.widthGame / 2, config.heightGame / 2,"atari" , "Enhorabuena \ntienes muy buena memoria", 26).setOrigin(.5, .5).setCenterAlign().setTint(0x1659F1);
     }
 
     ocultarCarta(carta, config){
